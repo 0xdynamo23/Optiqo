@@ -37,6 +37,18 @@ export function LandingNavbar() {
           >
             About
           </Link>
+          <Link 
+            href="/careers" 
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+          >
+            Careers
+          </Link>
+          <Link 
+            href="/team" 
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+          >
+            Our Team
+          </Link>
           <Link href="/auth">
             <Button variant="default" size="sm">
               Login
@@ -73,6 +85,20 @@ export function LandingNavbar() {
                 onClick={() => setIsOpen(false)}
               >
                 About
+              </Link>
+              <Link 
+                href="/careers" 
+                className="block px-2 py-1 text-lg font-medium hover:text-primary"
+                onClick={() => setIsOpen(false)}
+              >
+                Careers
+              </Link>
+              <Link 
+                href="/team" 
+                className="block px-2 py-1 text-lg font-medium hover:text-primary"
+                onClick={() => setIsOpen(false)}
+              >
+                Our Team
               </Link>
               <Link 
                 href="/auth" 
