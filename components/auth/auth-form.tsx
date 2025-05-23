@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Phone } from "lucide-react";
 import { OtpInput } from "@/components/auth/otp-input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const emailSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -25,10 +26,18 @@ const phoneSchema = z.object({
   }),
 });
 
+const registerSchema = z.object({
+  firstName: z.string().min(1, { message: "First name is required" }),
+  lastName: z.string().min(1, { message: "Last name is required" }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
+});
+
 export function AuthForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [authMethod, setAuthMethod] = useState<"email" | "phone">("email");
   const [showOtpInput, setShowOtpInput] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -47,60 +56,172 @@ export function AuthForm() {
     },
   });
 
-  function onEmailSubmit(data: z.infer<typeof emailSchema>) {
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+  const registerForm = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+    },
+  });
+
+  async function onEmailSubmit(data: z.infer<typeof emailSchema>) {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Handle specific error cases
+        if (response.status === 404) {
+          setError("Account not found. Please sign up first.");
+          return;
+        }
+        if (response.status === 401) {
+          setError("Incorrect password");
+          return;
+        }
+        throw new Error(result.message || 'Something went wrong');
+      }
+
       toast({
-        title: "Success",
+        title: "Welcome back!",
         description: "You've been logged in successfully.",
       });
       router.push("/welcome");
-    }, 2000);
+    } catch (err) {
+      console.error('Login error:', err);
+      setError("Unable to log in at the moment. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
-  function onPhoneSubmit(data: z.infer<typeof phoneSchema>) {
-    setIsLoading(true);
-    
-    // Simulate sending OTP
-    setTimeout(() => {
+  async function onRegisterSubmit(data: z.infer<typeof registerSchema>) {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Handle specific error cases
+        if (response.status === 409) {
+          setError("User already exists. Please login");
+          return;
+        }
+        throw new Error(result.message || 'Something went wrong');
+      }
+
+      toast({
+        title: "Account created!",
+        description: "Welcome to Optiqo. You can now log in.",
+      });
+      router.push("/welcome");
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError("Unable to create account at the moment. Please try again later.");
+    } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function onPhoneSubmit(data: z.infer<typeof phoneSchema>) {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/auth/phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.message || 'Failed to send verification code');
+      }
+
       setShowOtpInput(true);
       toast({
-        title: "OTP Sent",
+        title: "Code sent",
         description: `We've sent a verification code to ${data.phone}`,
       });
-    }, 1500);
+    } catch (err) {
+      console.error('Phone verification error:', err);
+      setError("Unable to send verification code. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
-  function onOtpComplete(otp: string) {
-    setIsLoading(true);
-    
-    // Simulate OTP verification
-    setTimeout(() => {
-      setIsLoading(false);
+  async function onOtpComplete(otp: string) {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ otp, phone: phoneForm.getValues('phone') }),
+      });
+
+      if (!response.ok) {
+        const result = await response.json();
+        if (response.status === 401) {
+          setError("Invalid verification code. Please try again.");
+          return;
+        }
+        throw new Error(result.message || 'Failed to verify code');
+      }
+
       toast({
-        title: "Success",
+        title: "Verified!",
         description: "Phone number verified successfully.",
       });
       router.push("/welcome");
-    }, 1500);
+    } catch (err) {
+      console.error('OTP verification error:', err);
+      setError("Unable to verify code. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
-  function onGoogleSignIn() {
-    setIsLoading(true);
-    
-    // Simulate Google auth
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Success",
-        description: "Google authentication successful.",
+  async function onGoogleSignIn() {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/auth/google', {
+        method: 'GET',
       });
-      router.push("/welcome");
-    }, 1500);
+
+      if (!response.ok) {
+        throw new Error('Failed to authenticate with Google');
+      }
+
+      const data = await response.json();
+      window.location.href = data.url; // Redirect to Google auth
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+      setError("Unable to sign in with Google. Please try again later.");
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -110,6 +231,12 @@ export function AuthForm() {
           <TabsTrigger value="login">Login</TabsTrigger>
           <TabsTrigger value="register">Register</TabsTrigger>
         </TabsList>
+        
+        {error && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         
         <TabsContent value="login" className="space-y-4 pt-4">
           <div className="space-y-4">
@@ -322,15 +449,35 @@ export function AuthForm() {
             <div className="flex-grow border-t border-border"></div>
           </div>
           
-          <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
+          <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" placeholder="John" disabled={isLoading} />
+                <Input 
+                  id="firstName" 
+                  placeholder="John" 
+                  disabled={isLoading}
+                  {...registerForm.register("firstName")}
+                />
+                {registerForm.formState.errors.firstName && (
+                  <p className="text-sm text-destructive">
+                    {registerForm.formState.errors.firstName.message}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" placeholder="Doe" disabled={isLoading} />
+                <Input 
+                  id="lastName" 
+                  placeholder="Doe" 
+                  disabled={isLoading}
+                  {...registerForm.register("lastName")}
+                />
+                {registerForm.formState.errors.lastName && (
+                  <p className="text-sm text-destructive">
+                    {registerForm.formState.errors.lastName.message}
+                  </p>
+                )}
               </div>
             </div>
             <div className="space-y-2">
@@ -341,11 +488,11 @@ export function AuthForm() {
                 type="email"
                 autoComplete="email"
                 disabled={isLoading}
-                {...emailForm.register("email")}
+                {...registerForm.register("email")}
               />
-              {emailForm.formState.errors.email && (
+              {registerForm.formState.errors.email && (
                 <p className="text-sm text-destructive">
-                  {emailForm.formState.errors.email.message}
+                  {registerForm.formState.errors.email.message}
                 </p>
               )}
             </div>
@@ -356,11 +503,11 @@ export function AuthForm() {
                 type="password"
                 autoComplete="new-password"
                 disabled={isLoading}
-                {...emailForm.register("password")}
+                {...registerForm.register("password")}
               />
-              {emailForm.formState.errors.password && (
+              {registerForm.formState.errors.password && (
                 <p className="text-sm text-destructive">
-                  {emailForm.formState.errors.password.message}
+                  {registerForm.formState.errors.password.message}
                 </p>
               )}
             </div>
