@@ -54,7 +54,7 @@ export default function DashboardLayout({
           <div className="flex items-center gap-2">
             <Link href="/dashboard" className="flex items-center gap-2">
               <BarChart2 className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold">FinEdge</span>
+              <span className="text-xl font-bold">Optiqo</span>
             </Link>
           </div>
           

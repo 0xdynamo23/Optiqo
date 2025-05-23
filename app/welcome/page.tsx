@@ -36,7 +36,7 @@ export default function WelcomePage() {
           transition={{ delay: 0.3, duration: 0.5 }}
           className="space-y-2"
         >
-          <h1 className="text-3xl font-bold">Welcome to FinEdge</h1>
+          <h1 className="text-3xl font-bold">Welcome to Optiqo</h1>
           <p className="text-muted-foreground">
             Your journey to financial success starts here
           </p>

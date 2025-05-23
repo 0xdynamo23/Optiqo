@@ -9,7 +9,7 @@ export function LandingFooter() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <BarChart2 className="h-5 w-5 text-primary" />
-              <span className="font-bold">FinEdge</span>
+              <span className="font-bold">Optiqo</span>
             </div>
             <p className="text-sm text-muted-foreground">
               Modern financial platform for the future.
@@ -77,7 +77,7 @@ export function LandingFooter() {
           </div>
         </div>
         <div className="mt-8 border-t border-border/40 pt-8 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} FinEdge. All rights reserved.
+          © {new Date().getFullYear()} Optiqo. All rights reserved.
         </div>
       </div>
     </footer>

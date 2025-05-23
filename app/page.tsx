@@ -48,7 +48,7 @@ export default function Home() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/10" /> {/* Subtle overlay */}
+          <div className="absolute inset-0 bg-black/10" /> 
         </div>
       </div>
     </div>

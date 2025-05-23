@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
-import { FcGoogle } from "react-icons/fc";
+import Image from "next/image";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -75,70 +75,81 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md space-y-8"
-      >
-        <div className="text-center">
-          <h2 className="text-3xl font-bold">{isLogin ? "Welcome Back" : "Create Account"}</h2>
-          <p className="mt-2 text-muted-foreground">
-            {isLogin ? "Sign in to your account" : "Sign up for a new account"}
-          </p>
-        </div>
+    <div className="h-screen flex flex-col lg:flex-row bg-background overflow-hidden">
+      {/* Image Section - Hidden on mobile, visible on desktop */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-primary/5">
+        <Image
+          src="/logo.png"
+          alt=""
+          fill
+          className="p-1 object-cover "
+        />
+      </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          {!isLogin && (
+      {/* Auth Form Section */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md space-y-8"
+        >
+          <div className="text-center lg:text-left">
+            <h2 className="text-3xl font-bold">{isLogin ? "Welcome Back" : "Create Account"}</h2>
+            <p className="mt-2 text-muted-foreground">
+              {isLogin ? "Sign in to your account" : "Sign up for a new account"}
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+            {!isLogin && (
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium">
+                  Name
+                </label>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  className="mt-1"
+                  placeholder="John Doe"
+                />
+              </div>
+            )}
+
             <div>
-              <label htmlFor="name" className="block text-sm font-medium">
-                Name
+              <label htmlFor="email" className="block text-sm font-medium">
+                Email
               </label>
               <Input
-                id="name"
-                name="name"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
                 className="mt-1"
-                placeholder="John Doe"
+                placeholder="you@example.com"
               />
             </div>
-          )}
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium">
-              Email
-            </label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              required
-              className="mt-1"
-              placeholder="you@example.com"
-            />
-          </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium">
+                Password
+              </label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className="mt-1"
+                placeholder="••••••••"
+              />
+            </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium">
-              Password
-            </label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              required
-              className="mt-1"
-              placeholder="••••••••"
-            />
-          </div>
+            {error && (
+              <p className="text-sm text-red-500">{error}</p>
+            )}
 
-          {error && (
-            <p className="text-sm text-red-500">{error}</p>
-          )}
-
-          <div className="space-y-4">
             <Button
               type="submit"
               className="w-full"
@@ -146,39 +157,20 @@ export default function AuthPage() {
             >
               {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
             </Button>
+          </form>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-muted"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-background text-muted-foreground">Or continue with</span>
-              </div>
-            </div>
-
-            <Button
+          <p className="text-center lg:text-left text-sm">
+            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            <button
               type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+              onClick={() => setIsLogin(!isLogin)}
+              className="font-medium text-primary hover:underline"
             >
-              <FcGoogle className="w-5 h-5 mr-2" />
-              Google
-            </Button>
-          </div>
-        </form>
-
-        <p className="text-center text-sm">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <button
-            type="button"
-            onClick={() => setIsLogin(!isLogin)}
-            className="font-medium text-primary hover:underline"
-          >
-            {isLogin ? "Sign Up" : "Sign In"}
-          </button>
-        </p>
-      </motion.div>
+              {isLogin ? "Sign Up" : "Sign In"}
+            </button>
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 }

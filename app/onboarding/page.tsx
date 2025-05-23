@@ -59,7 +59,7 @@ export default function OnboardingPage() {
         >
           <h1 className="text-3xl font-bold">Connect Your Broker</h1>
           <p className="text-muted-foreground">
-            Link your brokerage account to unlock the full potential of FinEdge.
+            Link your brokerage account to unlock the full potential of Optiqo.
           </p>
         </motion.div>
 
