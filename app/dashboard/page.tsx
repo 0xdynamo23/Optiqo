@@ -1,3 +1,8 @@
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { 
   Card, 
   CardContent, 
@@ -12,11 +17,32 @@ import { MarketNews } from "@/components/dashboard/market-news";
 import { WatchList } from "@/components/dashboard/watch-list";
 
 export default function DashboardPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth");
+    }
+  }, [status, router]);
+
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
   return (
     <div className="container py-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Explore Markets</h1>
+          <h1 className="text-3xl font-bold">Welcome, {session.user?.name || session.user?.email}</h1>
           <p className="text-muted-foreground">
             Analyze, track, and discover investment opportunities
           </p>
