@@ -18,10 +18,18 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // Redirect to dashboard if already authenticated
+  // Handle URL error parameters
+  useEffect(() => {
+    const errorType = searchParams?.get("error");
+    if (errorType === "OAuthAccountNotLinked") {
+      setError("An account with this email already exists. Please sign in with your original method.");
+    }
+  }, [searchParams]);
+
+  // Redirect to welcome if already authenticated
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/dashboard");
+      router.push("/welcome");
     }
   }, [status, router]);
 
@@ -30,20 +38,12 @@ export default function AuthPage() {
       setGoogleLoading(true);
       setError("");
       
-      const result = await signIn("google", {
-        callbackUrl: `${window.location.origin}/dashboard`,
-        redirect: false,
+      await signIn("google", {
+        callbackUrl: "/welcome",
       });
-
-      if (result?.error) {
-        setError("Failed to sign in with Google");
-      } else if (result?.ok) {
-        router.push("/dashboard");
-      }
     } catch (err) {
       console.error("Google sign-in error:", err);
       setError("Failed to sign in with Google");
-    } finally {
       setGoogleLoading(false);
     }
   };
@@ -63,17 +63,13 @@ export default function AuthPage() {
         const result = await signIn("credentials", {
           email,
           password,
+          callbackUrl: "/welcome",
           redirect: false,
         });
 
         if (result?.error) {
           setError("Invalid credentials");
           return;
-        }
-
-        if (result?.ok) {
-          router.push("/dashboard");
-          router.refresh();
         }
       } else {
         // Register
@@ -99,12 +95,13 @@ export default function AuthPage() {
         const result = await signIn("credentials", {
           email,
           password,
+          callbackUrl: "/welcome",
           redirect: false,
         });
 
-        if (result?.ok) {
-          router.push("/dashboard");
-          router.refresh();
+        if (result?.error) {
+          setError("Failed to sign in after registration");
+          return;
         }
       }
     } catch (err: any) {
