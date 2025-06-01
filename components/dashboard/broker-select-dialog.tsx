@@ -27,7 +27,7 @@ const brokers = [
   },
   {
     id: "zerodha",
-    name: "Zerodha",
+    name: "ZERODHA",
     description: "India's largest broker by active retail clients",
     icon: LineChart,
   },
