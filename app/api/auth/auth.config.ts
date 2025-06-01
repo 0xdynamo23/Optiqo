@@ -3,6 +3,9 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 
+// Ensure NEXTAUTH_URL is set in production
+const productionURL = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : process.env.NEXTAUTH_URL;
+
 // Extend the built-in session types
 declare module "next-auth" {
   interface Session {
