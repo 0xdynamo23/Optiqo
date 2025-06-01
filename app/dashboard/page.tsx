@@ -1,124 +1,92 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
+import { BrokerSelectDialog } from "@/components/dashboard/broker-select-dialog";
+import { StockChart } from "@/components/dashboard/stock-chart";
+import { StrategyGrid } from "@/components/dashboard/strategy-grid";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MarketChart } from "@/components/dashboard/market-chart";
-import { MarketNews } from "@/components/dashboard/market-news";
-import { WatchList } from "@/components/dashboard/watch-list";
+import { BarChart2, PieChart, LineChart, Settings } from "lucide-react";
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { data: session } = useSession();
+  const [showBrokerDialog, setShowBrokerDialog] = useState(true);
+  const [selectedBroker, setSelectedBroker] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth");
-    }
-  }, [status, router]);
-
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return null;
-  }
+  const handleBrokerSelect = (brokerId: string) => {
+    setSelectedBroker(brokerId);
+    setShowBrokerDialog(false);
+  };
 
   return (
-    <div className="container py-8">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Welcome, {session.user?.name || session.user?.email}</h1>
-          <p className="text-muted-foreground">
-            Analyze, track, and discover investment opportunities
-          </p>
+    <>
+      <BrokerSelectDialog
+        open={showBrokerDialog}
+        onOpenChange={setShowBrokerDialog}
+        onSelect={handleBrokerSelect}
+      />
+
+      <div className="min-h-screen bg-background p-8">
+        <div className="mx-auto max-w-7xl">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold">Welcome, {session?.user?.name}</h1>
+            <p className="text-muted-foreground">
+              {selectedBroker
+                ? `Connected to ${selectedBroker.toUpperCase()}`
+                : "Select a broker to start trading"}
+            </p>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid gap-6 md:grid-cols-3 mb-8">
+            {[
+              {
+                title: "Total Portfolio Value",
+                value: "$0.00",
+                icon: BarChart2,
+                color: "text-chart-1",
+              },
+              {
+                title: "Today's Change",
+                value: "$0.00",
+                icon: LineChart,
+                color: "text-chart-2",
+              },
+              {
+                title: "Total Return",
+                value: "0.00%",
+                icon: PieChart,
+                color: "text-chart-3",
+              },
+            ].map((stat, index) => (
+              <Card key={index} className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{stat.title}</p>
+                    <p className="text-2xl font-bold mt-1">{stat.value}</p>
+                  </div>
+                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            {/* Main Chart Section */}
+            <div className="xl:col-span-2">
+              <StockChart />
+            </div>
+
+            {/* Strategy Section */}
+            <div className="space-y-6">
+              <h2 className="text-xl font-semibold">Quant Strategies</h2>
+              <StrategyGrid />
+            </div>
+          </div>
         </div>
-        <div className="hidden md:block">
-          <Button>Add to Watchlist</Button>
-        </div>
       </div>
-      
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle>Market Overview</CardTitle>
-            <CardDescription>
-              Market performance for major indices
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="1D">
-              <div className="flex items-center justify-between">
-                <TabsList>
-                  <TabsTrigger value="1D">1D</TabsTrigger>
-                  <TabsTrigger value="1W">1W</TabsTrigger>
-                  <TabsTrigger value="1M">1M</TabsTrigger>
-                  <TabsTrigger value="3M">3M</TabsTrigger>
-                  <TabsTrigger value="1Y">1Y</TabsTrigger>
-                  <TabsTrigger value="5Y">5Y</TabsTrigger>
-                </TabsList>
-              </div>
-              <TabsContent value="1D">
-                <MarketChart period="1D" />
-              </TabsContent>
-              <TabsContent value="1W">
-                <MarketChart period="1W" />
-              </TabsContent>
-              <TabsContent value="1M">
-                <MarketChart period="1M" />
-              </TabsContent>
-              <TabsContent value="3M">
-                <MarketChart period="3M" />
-              </TabsContent>
-              <TabsContent value="1Y">
-                <MarketChart period="1Y" />
-              </TabsContent>
-              <TabsContent value="5Y">
-                <MarketChart period="5Y" />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Watchlist</CardTitle>
-            <CardDescription>
-              Track your favorite stocks
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <WatchList />
-          </CardContent>
-        </Card>
-      </div>
-      
-      <div className="mt-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Market News</CardTitle>
-            <CardDescription>
-              Latest financial news and updates
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <MarketNews />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    </>
   );
 }

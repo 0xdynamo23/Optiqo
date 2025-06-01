@@ -3,115 +3,108 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { BrokerCard } from "@/components/onboarding/broker-card";
-import { ArrowRight } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { Check } from "lucide-react";
+
+const steps = [
+  {
+    title: "Personal Information",
+    description: "Tell us a bit about yourself",
+  },
+  {
+    title: "Investment Goals",
+    description: "Set your financial objectives",
+  },
+  {
+    title: "Risk Assessment",
+    description: "Understand your risk tolerance",
+  },
+];
 
 export default function OnboardingPage() {
-  const [selectedBroker, setSelectedBroker] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
   const router = useRouter();
 
-  const brokers = [
-    {
-      id: "broker1",
-      name: "Fidelity",
-      description: "Connect to your Fidelity brokerage account",
-      icon: "building-2",
-      color: "bg-chart-1/10",
-      textColor: "text-chart-1",
-    },
-    {
-      id: "broker2",
-      name: "Vanguard",
-      description: "Connect to your Vanguard brokerage account",
-      icon: "briefcase",
-      color: "bg-chart-2/10",
-      textColor: "text-chart-2",
-    },
-  ];
-
-  const handleSelectBroker = (brokerId: string) => {
-    setSelectedBroker(brokerId);
-  };
-
-  const handleContinue = () => {
-    router.push("/dashboard");
-  };
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
+  const handleNext = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      // When all steps are complete, redirect to dashboard
+      router.push("/dashboard");
+    }
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <div className="container mx-auto flex max-w-screen-lg flex-1 flex-col px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8 space-y-2"
-        >
-          <h1 className="text-3xl font-bold">Connect Your Broker</h1>
-          <p className="text-muted-foreground">
-            Link your brokerage account to unlock the full potential of Optiqo.
-          </p>
-        </motion.div>
-
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="grid gap-6 md:grid-cols-2"
-        >
-          {brokers.map((broker) => (
-            <BrokerCard
-              key={broker.id}
-              broker={broker}
-              isSelected={selectedBroker === broker.id}
-              onSelect={handleSelectBroker}
-            />
-          ))}
-        </motion.div>
-
-        <div className="mt-auto space-y-4 pt-8">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
-          >
-            <Button
-              variant={selectedBroker ? "default" : "outline"}
-              size="lg"
-              onClick={handleContinue}
-              className="w-full justify-between md:w-auto"
-            >
-              {selectedBroker ? "Connect Broker" : "Skip for now"}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </motion.div>
-          
-          {selectedBroker && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Button
-                variant="link"
-                onClick={() => router.push("/dashboard")}
-                className="text-muted-foreground"
-              >
-                Skip for now
-              </Button>
-            </motion.div>
-          )}
+    <div className="min-h-screen bg-background p-8">
+      <div className="mx-auto max-w-3xl">
+        {/* Progress bar */}
+        <div className="mb-8">
+          <div className="flex justify-between">
+            {steps.map((step, index) => (
+              <div key={index} className="flex items-center">
+                <div
+                  className={`h-10 w-10 rounded-full flex items-center justify-center border-2 ${
+                    index <= currentStep
+                      ? "border-primary bg-primary text-white"
+                      : "border-muted-foreground text-muted-foreground"
+                  }`}
+                >
+                  {index < currentStep ? (
+                    <Check className="h-6 w-6" />
+                  ) : (
+                    index + 1
+                  )}
+                </div>
+                {index < steps.length - 1 && (
+                  <div
+                    className={`h-1 w-16 mx-2 ${
+                      index < currentStep ? "bg-primary" : "bg-muted"
+                    }`}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
         </div>
+
+        {/* Content */}
+        <motion.div
+          key={currentStep}
+          initial={{ x: 20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Card className="p-6">
+            <h2 className="text-2xl font-bold mb-2">
+              {steps[currentStep].title}
+            </h2>
+            <p className="text-muted-foreground mb-6">
+              {steps[currentStep].description}
+            </p>
+
+            {/* Placeholder for step content */}
+            <div className="min-h-[300px] flex items-center justify-center border-2 border-dashed rounded-lg">
+              <p className="text-muted-foreground">
+                Step {currentStep + 1} content will go here
+              </p>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-4">
+              {currentStep > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentStep(currentStep - 1)}
+                >
+                  Back
+                </Button>
+              )}
+              <Button onClick={handleNext}>
+                {currentStep === steps.length - 1 ? "Complete" : "Next"}
+              </Button>
+            </div>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );

@@ -38,7 +38,7 @@ export default function WelcomePage() {
         >
           <h1 className="text-3xl font-bold">Welcome to Optiqo</h1>
           <p className="text-muted-foreground">
-            Your journey to financial success starts here
+            Your journey to algorithmic trading starts here
           </p>
         </motion.div>
 
@@ -56,10 +56,10 @@ export default function WelcomePage() {
         >
           <Button 
             size="lg" 
-            onClick={() => router.push("/onboarding")}
+            onClick={() => router.push("/dashboard")}
             className="gap-2"
           >
-            Continue Onboarding <ArrowRight className="h-4 w-4" />
+            Get Started <ArrowRight className="h-4 w-4" />
           </Button>
         </motion.div>
       </div>
